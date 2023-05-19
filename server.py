@@ -54,15 +54,15 @@ def answerMe(prompt, language):
 
     # Configure the parameters for the query engine
     query_engine = index.as_query_engine(
-        temperature=0.7,
+        temperature=0.6,
         max_tokens=500,
         top_p=0.9,
-        frequency_penalty=0.6,
-        presence_penalty=0.6
+        frequency_penalty=0.3,
+        presence_penalty=0.2
     )
 
     q = "Here is a context for your responses:" \
-        "Respond as an AI helper who provides legal advice as a response and also provide specific examples of cases within knowledge you have of previous cases as an example and then advice if the query is a personal situation and not a question" \
+        "Respond as an AI helper who provides legal advice as a response and also provide relevant examples of previous cases and then advises if the query is a personal situation and not a question" \
         "Below is your question you have to respond to:"
 
     # Concatenate the prompt and language
