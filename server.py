@@ -48,30 +48,31 @@ def display_first_line(file_path):
     except Exception as e:
         print(f"An error occurred while reading the file: {str(e)}")
 
-def answerMe():
+def answerMe(prompt, language):
     storage_context = StorageContext.from_defaults(persist_dir="storage")
     index = load_index_from_storage(storage_context)
 
     # Configure the parameters for the query engine
     query_engine = index.as_query_engine(
         temperature=0.8,
-        max_tokens=500,
+        max_tokens=200,
         top_p=0.9,
         frequency_penalty=0.2,
         presence_penalty=0.5
     )
 
-    q = "Here is a context for your reponses:" \
-        "Talk as an AI bot who provides legal advice as a response and also provide specific examples of cases within knowledge you have of previous cases as example." \
-        "Below is your question you have to respond to:" \
-        "Can you talk about an interesting kidnapping case and what happenend in that trial?"
+    q = "Here is a context for your responses:" \
+        "Talk as an AI bot who provides legal advice as a response and also provide specific examples of cases within knowledge you have of previous cases as an example." \
+        "Below is your question you have to respond to:"
+
+    # Concatenate the prompt and language
+    q = q + "\n" + prompt + "\nTranslate response to " + language + ".\nGenerate a complete response and don't cut off due to token length."
 
     print(q)
     print('------------')
     response = query_engine.query(q)
     print(response)
     return response
-
 
 # createVectorIndex('knowledge')
 # answerMe()
@@ -105,9 +106,9 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             self.send_header('Content-type', 'application/json')
             self.end_headers()
             
-            generated_response = "random stuff for now"
+            # generated_response = "random stuff for now"
             # Generate the response using the prompt and language
-            # generated_response = answerMe(prompt, language)
+            generated_response = answerMe(prompt, language)
 
             # Return the generated response as JSON
             response_data = {'response': generated_response}
