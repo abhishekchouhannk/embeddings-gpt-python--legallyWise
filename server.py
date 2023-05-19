@@ -66,7 +66,7 @@ def answerMe(prompt, language):
         "Below is your question you have to respond to:"
 
     # Concatenate the prompt and language
-    q = q + "\n" + prompt + "\nTranslate response to " + language + ".\nGenerate a complete response and don't cut off due to token length."
+    q = q + "\n" + prompt + "\nTranslate response to " + language + ".\nGenerate a complete response."
 
     print(q)
     print('------------')
