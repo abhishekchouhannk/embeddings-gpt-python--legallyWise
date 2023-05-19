@@ -111,9 +111,9 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             generated_response = answerMe(prompt, language)
 
             # Return the generated response as JSON
-            response_data = {'response': generated_response}
-            response = json.dumps(response_data)
-            self.wfile.write(response.encode())
+            response_data = {'answer': generated_response}
+            answer = json.dumps(response_data)
+            self.wfile.write(answer.encode())
         else:
             self.send_response(HTTPStatus.OK)
             self.end_headers()
