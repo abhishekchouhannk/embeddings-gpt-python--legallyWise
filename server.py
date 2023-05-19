@@ -6,6 +6,7 @@ from llama_index import SimpleDirectoryReader, GPTListIndex, GPTVectorStoreIndex
 from langchain import OpenAI
 from dotenv import load_dotenv
 import sys
+import json
 
 from http import HTTPStatus
 
@@ -75,15 +76,42 @@ def answerMe():
 # createVectorIndex('knowledge')
 # answerMe()
 
+# class Handler(http.server.SimpleHTTPRequestHandler):
+#     def do_GET(self):
+#         if self.path == '/respond':
+#             self.send_response(HTTPStatus.OK)
+#             self.send_header('Content-type', 'text/html')
+#             self.end_headers()
+#             response = answerMe()  # Generate the response using the answerMe() function
+#             msg = 'Python is running on LOL! You requested %s' % (response)
+#             self.wfile.write(msg.encode())
+#         else:
+#             self.send_response(HTTPStatus.OK)
+#             self.end_headers()
+#             msg = 'Python is running on Qoddi! You requested %s' % (self.path)
+#             self.wfile.write(msg.encode())
+
 class Handler(http.server.SimpleHTTPRequestHandler):
-    def do_GET(self):
+    def do_POST(self):
         if self.path == '/respond':
+            content_length = int(self.headers['Content-Length'])
+            body = self.rfile.read(content_length)
+            data = json.loads(body)
+
+            prompt = data.get('prompt')
+            language = data.get('language')
+
             self.send_response(HTTPStatus.OK)
-            self.send_header('Content-type', 'text/html')
+            self.send_header('Content-type', 'application/json')
             self.end_headers()
-            response = answerMe()  # Generate the response using the answerMe() function
-            msg = 'Python is running on LOL! You requested %s' % (response)
-            self.wfile.write(msg.encode())
+            
+            # Generate the response using the prompt and language
+            generated_response = answerMe(prompt, language)
+
+            # Return the generated response as JSON
+            response_data = {'response': generated_response}
+            response = json.dumps(response_data)
+            self.wfile.write(response.encode())
         else:
             self.send_response(HTTPStatus.OK)
             self.end_headers()
