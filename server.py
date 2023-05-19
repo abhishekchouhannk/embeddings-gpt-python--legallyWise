@@ -2,9 +2,10 @@ import os
 import http.server
 import socketserver
 
-PORT = 8000
+from http import HTTPStatus
 
-class MyRequestHandler(http.server.SimpleHTTPRequestHandler):
+
+class Handler(http.server.SimpleHTTPRequestHandler):
     def do_GET(self):
         if self.path == '/hello':
             self.send_response(200)
@@ -12,8 +13,13 @@ class MyRequestHandler(http.server.SimpleHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(b'Hello from custom route!')
         else:
-            super().do_GET()
+        self.send_response(HTTPStatus.OK)
+        self.end_headers()
+        msg = 'Python is running on Qoddi! You requested %s' % (self.path)
+        self.wfile.write(msg.encode())
 
-with socketserver.TCPServer(("", PORT), MyRequestHandler) as httpd:
-    print("Server running on port", PORT)
-    httpd.serve_forever()
+
+port = int(os.getenv('PORT', 8080))
+print('Listening on port %s' % (port))
+httpd = socketserver.TCPServer(('', port), Handler)
+httpd.serve_forever()
