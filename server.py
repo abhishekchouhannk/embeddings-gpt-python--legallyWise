@@ -105,8 +105,9 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             self.send_header('Content-type', 'application/json')
             self.end_headers()
             
+            generated_response = "random stuff for now"
             # Generate the response using the prompt and language
-            generated_response = answerMe(prompt, language)
+            # generated_response = answerMe(prompt, language)
 
             # Return the generated response as JSON
             response_data = {'response': generated_response}
