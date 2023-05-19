@@ -54,11 +54,11 @@ def answerMe(prompt, language):
 
     # Configure the parameters for the query engine
     query_engine = index.as_query_engine(
-        temperature=0.8,
-        max_tokens=200,
+        temperature=0.7,
+        max_tokens=500,
         top_p=0.9,
-        frequency_penalty=0.2,
-        presence_penalty=0.5
+        frequency_penalty=0.6,
+        presence_penalty=0.6
     )
 
     q = "Here is a context for your responses:" \
