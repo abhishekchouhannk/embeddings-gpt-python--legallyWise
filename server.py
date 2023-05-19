@@ -4,11 +4,14 @@ import socketserver
 from llama_index import SimpleDirectoryReader, GPTListIndex, GPTVectorStoreIndex, LLMPredictor, PromptHelper, \
     ServiceContext, StorageContext, load_index_from_storage
 from langchain import OpenAI
+from dotenv import load_dotenv
 import sys
 
 from http import HTTPStatus
 
-os.environ["OPENAI_API_KEY"] = "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"
+load_dotenv()
+
+os.environ["OPENAI_API_KEY"] = os.environ.get("KEY")
 
 def createVectorIndex(path):
     max_input = 4096
@@ -66,6 +69,7 @@ def answerMe():
     print('------------')
     response = query_engine.query(q)
     print(response)
+    return response
 
 
 # createVectorIndex('knowledge')
@@ -77,7 +81,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             self.send_response(HTTPStatus.OK)
             self.send_header('Content-type', 'text/html')
             self.end_headers()
-            msg = 'Python is running on LOL! You requested %s' % (answerMe())
+            response = answerMe()  # Generate the response using the answerMe() function
+            msg = 'Python is running on LOL! You requested %s' % (response)
             self.wfile.write(msg.encode())
         else:
             self.send_response(HTTPStatus.OK)
