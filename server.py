@@ -62,7 +62,7 @@ def answerMe(prompt, language):
     )
 
     q = "Here is a context for your responses:" \
-        "Talk as an AI bot who provides legal advice as a response and also provide specific examples of cases within knowledge you have of previous cases as an example." \
+        "Respond as an AI helper who provides legal advice as a response and also provide specific examples of cases within knowledge you have of previous cases as an example and then advice if the query is a personal situation and not a question" \
         "Below is your question you have to respond to:"
 
     # Concatenate the prompt and language
