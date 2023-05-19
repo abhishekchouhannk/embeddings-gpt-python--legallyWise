@@ -7,10 +7,17 @@ from http import HTTPStatus
 
 class Handler(http.server.SimpleHTTPRequestHandler):
     def do_GET(self):
-        self.send_response(HTTPStatus.OK)
-        self.end_headers()
-        msg = 'Python is running on Qoddi! You requested %s' % (self.path)
-        self.wfile.write(msg.encode())
+        if self.path == '/respond':
+            self.send_response(HTTPStatus.OK)
+            self.send_header('Content-type', 'text/html')
+            self.end_headers()
+            msg = 'Python is running on LOL! You requested %s' % (self.path)
+            self.wfile.write(msg.encode())
+        else:
+            self.send_response(HTTPStatus.OK)
+            self.end_headers()
+            msg = 'Python is running on Qoddi! You requested %s' % (self.path)
+            self.wfile.write(msg.encode())
 
 
 port = int(os.getenv('PORT', 8080))
