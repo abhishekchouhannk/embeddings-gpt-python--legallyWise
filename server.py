@@ -123,6 +123,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             data = json.loads(body)
 
             pdfData = data.get('data')
+            print(data.get('data'))
             print("error getting pdf data")
 
             text_splitter = CharacterTextSplitter(separator="\n", chunk_size=900, chunk_overlap=200,
@@ -158,6 +159,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             data = json.loads(body)
 
             ques = data.get('question')
+            print(data.get('question'))
             print("error getting question")
 
             docs = docsearch.similarity_search(ques)
