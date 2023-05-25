@@ -160,8 +160,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
             print(data)
 
-            ques = data.get('ques')
-            print(data.get('ques'))
+            ques = data.get('question')
+            print(data.get('question'))
             print("error getting question")
 
             docs = docsearch.similarity_search(ques)
