@@ -123,23 +123,13 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             data = json.loads(body)
 
             pdfData = data.get('data')
-            print(data.get('data'))
-            print("error getting pdf data")
 
             text_splitter = CharacterTextSplitter(separator="\n", chunk_size=900, chunk_overlap=200,
                                                   length_function=len)
             texts = text_splitter.split_text(pdfData)
 
-            print("error splitting data")
-            # print(texts[0])
-            # print("\n\n\n")
-            # print(texts[1])
-
             embeddings = OpenAIEmbeddings()
-            print("error initiazliging openAI embeddings")
-
             docsearch = FAISS.from_texts(texts, embeddings)
-            print("error setting up docsearch")
             chain = load_qa_chain(OpenAI(temperature=0.5), chain_type="stuff")
 
             log = "Chain setup succesfully"
@@ -163,17 +153,19 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             print(data)
 
             ques = data.get('question')
-            print(data.get('question'))
-            print("error getting question")
 
             docs = docsearch.similarity_search(ques)
-            print("error searching doc for siimlar chunk")
 
             response = chain.run(input_documents=docs, question=ques)
-            print(response)
-            print("error running chain")
-            # convert response to json format manually
-            json_response = f'{{"response": "{response}"}}'
+
+            # convert response to json format and validate format
+            response_data = {'response': response}
+            json_response = json.dumps(response_data)
+
+            self.send_response(HTTPStatus.OK)
+            self.send_header('Content-Type', 'application/json')  # Set the Content-Type header
+            self.end_headers()
+
             self.wfile.write(json_response.encode())
             print("sent reponse for question")
 
