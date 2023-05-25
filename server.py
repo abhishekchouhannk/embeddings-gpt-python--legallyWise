@@ -84,11 +84,13 @@ def answerMe(prompt, language):
 
 # createVectorIndex('knowledge')
 # answerMe()
-chain = None
-docsearch = None
+# chain = None
+# docsearch = None
 
 class Handler(http.server.SimpleHTTPRequestHandler):
     def do_POST(self):
+        global chain
+        global docsearch
         # Initialize the chain variable as None
 
         if self.path == '/respond':
