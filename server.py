@@ -5,14 +5,20 @@ from llama_index import SimpleDirectoryReader, GPTListIndex, GPTVectorStoreIndex
     ServiceContext, StorageContext, load_index_from_storage
 from langchain import OpenAI
 from dotenv import load_dotenv
-import sys
 import json
+from langchain.chains.question_answering import load_qa_chain
+from langchain.embeddings import OpenAIEmbeddings
+from langchain.text_splitter import CharacterTextSplitter
+from langchain.vectorstores import Chroma
+from langchain import OpenAI, VectorDBQA, FAISS
+from langchain.document_loaders import UnstructuredFileLoader
 
 from http import HTTPStatus
 
 load_dotenv()
 
 os.environ["OPENAI_API_KEY"] = os.environ.get("KEY")
+
 
 def createVectorIndex(path):
     max_input = 4096
@@ -22,21 +28,22 @@ def createVectorIndex(path):
 
     prompt_helper = PromptHelper(max_input, tokens, max_chunk_overlap, chunk_size_limit=chunk_size)
 
-    #define LLM
+    # define LLM
     llmPredictor = LLMPredictor(llm=OpenAI(temperature=0, model_name="text-ada-001", max_tokens=tokens))
 
-    #load data
+    # load data
     docs = SimpleDirectoryReader(path).load_data()
 
     service_context = ServiceContext.from_defaults(llm_predictor=llmPredictor, prompt_helper=prompt_helper)
 
-    #create vector index
+    # create vector index
     vectorIndex = GPTVectorStoreIndex.from_documents(
         docs, service_context=service_context
     )
     vectorIndex.storage_context.persist(persist_dir="storage")
 
     return vectorIndex
+
 
 def display_first_line(file_path):
     try:
@@ -47,6 +54,7 @@ def display_first_line(file_path):
         print(f"File '{file_path}' not found.")
     except Exception as e:
         print(f"An error occurred while reading the file: {str(e)}")
+
 
 def answerMe(prompt, language):
     storage_context = StorageContext.from_defaults(persist_dir="storage")
@@ -73,26 +81,16 @@ def answerMe(prompt, language):
     response = query_engine.query(q)
     return response
 
+
 # createVectorIndex('knowledge')
 # answerMe()
 
-# class Handler(http.server.SimpleHTTPRequestHandler):
-#     def do_GET(self):
-#         if self.path == '/respond':
-#             self.send_response(HTTPStatus.OK)
-#             self.send_header('Content-type', 'text/html')
-#             self.end_headers()
-#             response = answerMe()  # Generate the response using the answerMe() function
-#             msg = 'Python is running on LOL! You requested %s' % (response)
-#             self.wfile.write(msg.encode())
-#         else:
-#             self.send_response(HTTPStatus.OK)
-#             self.end_headers()
-#             msg = 'Python is running on Qoddi! You requested %s' % (self.path)
-#             self.wfile.write(msg.encode())
-
 class Handler(http.server.SimpleHTTPRequestHandler):
     def do_POST(self):
+        # Initialize the chain variable as None
+        chain = None
+        docsearch = None
+
         if self.path == '/respond':
             content_length = int(self.headers['Content-Length'])
             body = self.rfile.read(content_length)
@@ -104,7 +102,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             self.send_response(HTTPStatus.OK)
             self.send_header('Content-type', 'application/json')
             self.end_headers()
-            
+
             # generated_response = "random stuff for now"
             # Generate the response using the prompt and language
             generated_response = answerMe(prompt, language)
@@ -116,11 +114,53 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             # response_data = {'advice': generated_response}
             # answer = json.dumps(response_data)
             self.wfile.write(json_response.encode())
+        elif self.path == '/setupPDF':
+            content_length = int(self.headers['Content-Length'])
+            body = self.rfile.read(content_length)
+            data = json.loads(body)
+
+            pdfData = data.get('data')
+
+            text_splitter = CharacterTextSplitter(separator="\n", chunk_size=900, chunk_overlap=200,
+                                                  length_function=len)
+            texts = text_splitter.split_text(pdfData)
+
+            # print(texts[0])
+            # print("\n\n\n")
+            # print(texts[1])
+
+            embeddings = OpenAIEmbeddings()
+
+            docsearch = FAISS.from_texts(texts, embeddings)
+
+            chain = load_qa_chain(OpenAI(temperature=0.5), chain_type="stuff")
+
+            # convert response to json format manually
+            json_response = f'{{"response": "{"Chain setup succesfully"}"}}'
+
+            self.wfile.write(json_response.encode())
+
+        elif self.path == '/askQuestion' :
+            content_length = int(self.headers['Content-Length'])
+            body = self.rfile.read(content_length)
+            data = json.loads(body)
+
+            ques = data.get('question')
+
+            docs = docsearch.similarity_search(ques)
+
+            response = chain.run(input_documents=docs, question=ques)
+
+            # convert response to json format manually
+            json_response = f'{{"response": "{response}"}}'
+            self.wfile.write(json_response.encode())
+
         else:
             self.send_response(HTTPStatus.OK)
             self.end_headers()
             msg = 'Python is running on Qoddi! You requested %s' % (self.path)
             self.wfile.write(msg.encode())
+
 
 port = int(os.getenv('PORT', 8080))
 print('Listening on port %s' % (port))
