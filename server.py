@@ -158,6 +158,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             body = self.rfile.read(content_length)
             data = json.loads(body)
 
+            print(data)
+
             ques = data.get('ques')
             print(data.get('ques'))
             print("error getting question")
