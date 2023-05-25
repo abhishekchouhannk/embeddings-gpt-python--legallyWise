@@ -71,7 +71,6 @@ def answerMe(prompt, language):
     print(q)
     print('------------')
     response = query_engine.query(q)
-    print(response)
     return response
 
 # createVectorIndex('knowledge')
