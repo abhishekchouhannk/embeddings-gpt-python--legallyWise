@@ -168,6 +168,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             print("error searching doc for siimlar chunk")
 
             response = chain.run(input_documents=docs, question=ques)
+            print(response)
             print("error running chain")
             # convert response to json format manually
             json_response = f'{{"response": "{response}"}}'
