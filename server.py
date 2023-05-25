@@ -139,15 +139,12 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             print("error setting up docsearch")
             chain = load_qa_chain(OpenAI(temperature=0.5), chain_type="stuff")
 
-            query = "Can you give me a summary of this text."
-
-            docs = docsearch.similarity_search(query)
-            print(chain.run(input_documents=docs, question=query))
-
-
+            log = "Chain setup succesfully"
             print("error setting up qa chain")
             # convert response to json format manually
-            json_response = f'{{"response": "{"Chain setup succesfully"}"}}'
+            json_response = f'{{"response": "{log}"}}'
+
+            
 
             self.wfile.write(json_response.encode())
             print("sent response for confirmation")
