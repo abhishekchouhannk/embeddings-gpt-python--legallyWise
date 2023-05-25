@@ -115,45 +115,55 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             # answer = json.dumps(response_data)
             self.wfile.write(json_response.encode())
         elif self.path == '/setupPDF':
+            print("setup pdf request received")
             content_length = int(self.headers['Content-Length'])
             body = self.rfile.read(content_length)
             data = json.loads(body)
 
             pdfData = data.get('data')
+            print("error getting pdf data")
 
             text_splitter = CharacterTextSplitter(separator="\n", chunk_size=900, chunk_overlap=200,
                                                   length_function=len)
             texts = text_splitter.split_text(pdfData)
 
+            print("error splitting data")
             # print(texts[0])
             # print("\n\n\n")
             # print(texts[1])
 
             embeddings = OpenAIEmbeddings()
+            print("error initiazliging openAI embeddings")
 
             docsearch = FAISS.from_texts(texts, embeddings)
-
+            print("error setting up docsearch")
             chain = load_qa_chain(OpenAI(temperature=0.5), chain_type="stuff")
 
+            print("error setting up qa chain")
             # convert response to json format manually
             json_response = f'{{"response": "{"Chain setup succesfully"}"}}'
 
             self.wfile.write(json_response.encode())
+            print("sent response for confirmation")
 
         elif self.path == '/askQuestion' :
+            print("ask question request received")
             content_length = int(self.headers['Content-Length'])
             body = self.rfile.read(content_length)
             data = json.loads(body)
 
             ques = data.get('question')
+            print("error getting question")
 
             docs = docsearch.similarity_search(ques)
+            print("error searching doc for siimlar chunk")
 
             response = chain.run(input_documents=docs, question=ques)
-
+            print("error running chain")
             # convert response to json format manually
             json_response = f'{{"response": "{response}"}}'
             self.wfile.write(json_response.encode())
+            print("sent reponse for question")
 
         else:
             self.send_response(HTTPStatus.OK)
