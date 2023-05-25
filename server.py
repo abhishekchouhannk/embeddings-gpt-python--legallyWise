@@ -84,12 +84,12 @@ def answerMe(prompt, language):
 
 # createVectorIndex('knowledge')
 # answerMe()
+chain = None
+docsearch = None
 
 class Handler(http.server.SimpleHTTPRequestHandler):
     def do_POST(self):
         # Initialize the chain variable as None
-        chain = None
-        docsearch = None
 
         if self.path == '/respond':
             content_length = int(self.headers['Content-Length'])
