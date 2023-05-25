@@ -143,11 +143,13 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             chain = load_qa_chain(OpenAI(temperature=0.5), chain_type="stuff")
 
             log = "Chain setup succesfully"
-            print("error setting up qa chain")
-            # convert response to json format manually
-            json_response = f'{{"response": "{log}"}}'
+            # Convert the response to JSON format
+            response_data = {'response': log}
+            json_response = json.dumps(response_data)
 
-            
+            self.send_response(HTTPStatus.OK)
+            self.send_header('Content-Type', 'application/json')  # Set the Content-Type header
+            self.end_headers()
 
             self.wfile.write(json_response.encode())
             print("sent response for confirmation")
